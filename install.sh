@@ -38,7 +38,7 @@ done
 [[ -z "$REMOTE_HOST" ]] && usage
 
 REMOTE="${REMOTE_USER}@${REMOTE_HOST}"
-SSH_OPTS="-p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=10"
+SSH_OPTS="-p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5"
 
 echo -e "${GREEN}═══ Vibruh Relay 安装器 ═══${NC}"
 echo "目标: $REMOTE  SSH端口: $SSH_PORT  服务端口: $PORT"
@@ -46,9 +46,10 @@ echo ""
 
 # ── Check SSH access ──
 echo -e "${YELLOW}[1/4]${NC} 检查 SSH 连接..."
-if ! ssh $SSH_OPTS "$REMOTE" "echo ok" &>/dev/null; then
+if ! ssh $SSH_OPTS "$REMOTE" "echo ok" 2>/dev/null; then
     echo -e "${RED}无法 SSH 到 $REMOTE，请先配置免密登录${NC}"
     echo "  ssh-copy-id -p $SSH_PORT $REMOTE"
+    echo "  或手动测试: ssh $REMOTE -p $SSH_PORT echo ok"
     exit 1
 fi
 echo "      SSH OK"
