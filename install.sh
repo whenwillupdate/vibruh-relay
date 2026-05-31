@@ -166,6 +166,15 @@ UNIT
         sudo systemctl restart vibruh-relay
         sleep 2
         sudo systemctl status vibruh-relay --no-pager
+        # Open firewall
+        if command -v ufw &>/dev/null; then
+            sudo ufw allow $PORT/tcp 2>/dev/null || true
+            echo "      ufw 已放行端口 $PORT"
+        elif command -v firewall-cmd &>/dev/null; then
+            sudo firewall-cmd --add-port=$PORT/tcp --permanent 2>/dev/null || true
+            sudo firewall-cmd --reload 2>/dev/null || true
+            echo "      firewalld 已放行端口 $PORT"
+        fi
     else
         # No sudo — just nohup
         nohup env VIBRUH_PORT=$PORT ~/vibruh-relay > ~/vibruh-relay.log 2>&1 &
@@ -201,6 +210,19 @@ PLISTEOF
     launchctl unload "\$PLIST" 2>/dev/null || true
     launchctl load "\$PLIST"
     echo "      launchd 已加载（开机自启）"
+
+    # Open firewall port
+    if command -v /usr/libexec/ApplicationFirewall/socketfilterfw &>/dev/null; then
+        echo "      开放防火墙端口 $PORT..."
+        if sudo -n true 2>/dev/null; then
+            sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add ~/vibruh-relay 2>/dev/null || true
+            sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblockapp ~/vibruh-relay 2>/dev/null || true
+            echo "      防火墙已放行"
+        else
+            echo "      ⚠️ 需要 sudo 开放防火墙，请手动执行："
+            echo "        sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add ~/vibruh-relay"
+        fi
+    fi
 
 else
     echo "      无 systemd/launchd，使用 nohup"
