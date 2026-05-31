@@ -38,7 +38,8 @@ done
 [[ -z "$REMOTE_HOST" ]] && usage
 
 REMOTE="${REMOTE_USER}@${REMOTE_HOST}"
-SSH_OPTS="-p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5"
+SSH_OPTS="-n -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5"
+SCP_OPTS="-P $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=10"
 
 echo -e "${GREEN}═══ Vibruh Relay 安装器 ═══${NC}"
 echo "目标: $REMOTE  SSH端口: $SSH_PORT  服务端口: $PORT"
