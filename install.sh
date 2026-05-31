@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 
 # Vibruh Relay — one-line installer
 # Usage: curl -fsSL https://raw.githubusercontent.com/whenwillupdate/vibruh-relay/main/scripts/install.sh | bash -s -- user@host [-p ssh_port]
@@ -46,10 +46,10 @@ echo ""
 
 # ── Check SSH access ──
 echo -e "${YELLOW}[1/4]${NC} 检查 SSH 连接..."
-if ! ssh $SSH_OPTS "$REMOTE" "echo ok" 2>/dev/null; then
+SSH_OK=$(ssh $SSH_OPTS "$REMOTE" "echo ok" 2>/dev/null) || true
+if [ "$SSH_OK" != "ok" ]; then
     echo -e "${RED}无法 SSH 到 $REMOTE，请先配置免密登录${NC}"
     echo "  ssh-copy-id -p $SSH_PORT $REMOTE"
-    echo "  或手动测试: ssh $REMOTE -p $SSH_PORT echo ok"
     exit 1
 fi
 echo "      SSH OK"
