@@ -185,16 +185,19 @@ elif command -v launchctl &>/dev/null; then
 <dict>
     <key>Label</key><string>com.vibruh.relay</string>
     <key>ProgramArguments</key>
-    <array><string>\$HOME/vibruh-relay</string></array>
+    <array><string>__VIHOME__/vibruh-relay</string></array>
+    <key>WorkingDirectory</key>
+    <string>__VIHOME__</string>
     <key>EnvironmentVariables</key>
     <dict><key>VIBRUH_PORT</key><string>$PORT</string></dict>
     <key>RunAtLoad</key><true/>
     <key>KeepAlive</key><true/>
-    <key>StandardOutPath</key><string>\$HOME/vibruh-relay.log</string>
-    <key>StandardErrorPath</key><string>\$HOME/vibruh-relay.log</string>
+    <key>StandardOutPath</key><string>__VIHOME__/vibruh-relay.log</string>
+    <key>StandardErrorPath</key><string>__VIHOME__/vibruh-relay.log</string>
 </dict>
 </plist>
 PLISTEOF
+    sed -i '' "s|__VIHOME__|\$HOME|g" "\$PLIST"
     launchctl unload "\$PLIST" 2>/dev/null || true
     launchctl load "\$PLIST"
     echo "      launchd 已加载（开机自启）"
