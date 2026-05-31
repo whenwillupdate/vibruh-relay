@@ -46,7 +46,7 @@ echo ""
 
 # ── Check SSH access ──
 echo -e "${YELLOW}[1/4]${NC} 检查 SSH 连接..."
-SSH_OK=$(ssh $SSH_OPTS "$REMOTE" "echo ok" 2>/dev/null) || true
+SSH_OK=$(ssh -n $SSH_OPTS "$REMOTE" "echo ok" 2>/dev/null) || true
 if [ "$SSH_OK" != "ok" ]; then
     echo -e "${RED}无法 SSH 到 $REMOTE，请先配置免密登录${NC}"
     echo "  ssh-copy-id -p $SSH_PORT $REMOTE"
@@ -56,7 +56,7 @@ echo "      SSH OK"
 
 # ── Detect remote system ──
 echo -e "${YELLOW}[2/4]${NC} 检测远程系统..."
-REMOTE_UNAME=$(ssh $SSH_OPTS "$REMOTE" "uname -sm" 2>/dev/null)
+REMOTE_UNAME=$(ssh -n $SSH_OPTS "$REMOTE" "uname -sm" 2>/dev/null)
 ARCH=$(echo "$REMOTE_UNAME" | awk '{print $NF}')
 KERNEL=$(echo "$REMOTE_UNAME" | awk '{print $1}')
 
@@ -129,7 +129,7 @@ scp $SSH_OPTS "/tmp/$BIN_NAME" "$REMOTE:~/vibruh-relay"
 rm -f "/tmp/$BIN_NAME"
 
 # Install on remote
-ssh $SSH_OPTS "$REMOTE" bash -s << ENDSSH
+ssh -n $SSH_OPTS "$REMOTE" bash -s << ENDSSH
 set -e
 
 # Kill old
@@ -212,4 +212,4 @@ echo ""
 echo "  iOS App → 设置 → 中继服务地址:"
 echo "  ${REMOTE_HOST}:${PORT}"
 echo ""
-echo "  管理: ssh $SSH_OPTS $REMOTE"
+echo "  管理: ssh -n $SSH_OPTS $REMOTE"
