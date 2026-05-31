@@ -232,10 +232,36 @@ else
 fi
 ENDSSH
 
+# ── Verify ──
 echo ""
-echo -e "${GREEN}✅ 安装完成${NC}"
+echo -e "${YELLOW}验证服务...${NC}"
+sleep 2
+if ssh -n -p $SSH_PORT "$REMOTE" "curl -s http://localhost:$PORT/api/health" 2>/dev/null | grep -q '"ok"'; then
+    echo -e "${GREEN}✅ 安装完成 — 服务运行正常${NC}"
+else
+    echo -e "${YELLOW}⚠️ 启动异常，尝试手动启动...${NC}"
+    ssh -n -p $SSH_PORT "$REMOTE" "nohup ~/vibruh-relay > ~/vibruh-relay.log 2>&1 &" 2>/dev/null || true
+    sleep 2
+    if ssh -n -p $SSH_PORT "$REMOTE" "curl -s http://localhost:$PORT/api/health" 2>/dev/null | grep -q '"ok"'; then
+        echo -e "${GREEN}✅ 已手动启动成功${NC}"
+    else
+        echo -e "${RED}❌ 启动失败，查看日志: ssh -p $SSH_PORT $REMOTE cat ~/vibruh-relay.log${NC}"
+    fi
+fi
+
+# External reachability check
+echo ""
+echo -e "${YELLOW}检测外网可达性...${NC}"
+if curl -s --connect-timeout 3 "http://${REMOTE_HOST}:${PORT}/api/health" 2>/dev/null | grep -q '"ok"'; then
+    echo -e "${GREEN}✅ 端口 ${PORT} 外网可达 — iPhone 可直接连接${NC}"
+else
+    echo -e "${YELLOW}⚠️ 端口 ${PORT} 外网不可达${NC}"
+    echo "  需在路由器上做端口转发 ${PORT}，或用 SSH 隧道："
+    echo "    ssh -n -N -L ${PORT}:localhost:${PORT} ${REMOTE} -p $SSH_PORT"
+fi
+
 echo ""
 echo "  iOS App → 设置 → 中继服务地址:"
 echo "  ${REMOTE_HOST}:${PORT}"
 echo ""
-echo "  管理: ssh -n $SSH_OPTS $REMOTE"
+echo "  管理: ssh -p $SSH_PORT $REMOTE"
